@@ -15,9 +15,19 @@ if(!defined('ABSPATH')){
     header("Location: /");
     exit;
 }
+class VkVtcPlugin {
 
-function vkvtc_activation() {
-    global $wpdb;
+    public function __construct() {
+        // Register activation and deactivation hooks
+        register_activation_hook(__FILE__, array($this, 'activation'));
+        register_deactivation_hook(__FILE__, array($this, 'deactivation'));
+
+        // Add shortcode
+        add_shortcode('vkvtc_siteName', array($this, 'siteNameShortcode'));
+    }
+
+    public function activation() {
+        global $wpdb;
 
     $students = $wpdb->prefix . 'students';
     $wallet_transactions = $wpdb->prefix . 'wallet_transactions';
@@ -127,19 +137,31 @@ function vkvtc_activation() {
     dbDelta($sql_student_courses);//
     dbDelta($sql_certificates);
     dbDelta($sql__marksheet);
+    }
+
+    public function deactivation() {
+        global $wpdb;
+
+        $students = $wpdb->prefix . 'students';
+        $wallet_transactions = $wpdb->prefix . 'wallet_transactions';
+        $student_courses = $wpdb->prefix . 'student_courses';
+        $centers = $wpdb->prefix  . 'centers';
+        $certificates = $wpdb->prefix . 'certificates';
+        $marksheet = $wpdb->prefix . 'marks';
+
+        // // Drop the tables if they exist
+        // $wpdb->query("DROP TABLE IF EXISTS $centers");
+        // $wpdb->query("DROP TABLE IF EXISTS $students");
+        // $wpdb->query("DROP TABLE IF EXISTS $wallet_transactions");
+        // $wpdb->query("DROP TABLE IF EXISTS $student_courses");
+        // $wpdb->query("DROP TABLE IF EXISTS $certificates");
+        // $wpdb->query("DROP TABLE IF EXISTS $marksheet");
+    }
+
+    public function siteNameShortcode() {
+        return get_bloginfo("name");
+    }
 }
 
-// Call the activation function on plugin/theme activation
-register_activation_hook(__FILE__, 'vkvtc_activation');
-
-register_deactivation_hook(__FILE__, 'vkvtc_deactivation');
-
-function vkvtc_deactivation(){
-    echo "djfkdf";
-}
-// SHORTCODES
-function vkvtc_site_name(){
-   $ankit =  get_bloginfo("name");
-   return $ankit;
-}
-add_shortcode('vkvtc_siteName', 'vkvtc_site_name');
+// Instantiate the class
+$vkVtcPlugin = new VkVtcPlugin();
