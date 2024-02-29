@@ -1,6 +1,6 @@
 <?php
 /**
- * @package Akismet
+ *
  */
 /*
 Plugin Name: vkvtc
@@ -15,19 +15,8 @@ if(!defined('ABSPATH')){
     header("Location: /");
     exit;
 }
-class VkVtcPlugin {
-
-    public function __construct() {
-        // Register activation and deactivation hooks
-        register_activation_hook(__FILE__, array($this, 'activation'));
-        register_deactivation_hook(__FILE__, array($this, 'deactivation'));
-
-        // Add shortcode
-        add_shortcode('vkvtc_siteName', array($this, 'siteNameShortcode'));
-    }
-
-    public function activation() {
-        global $wpdb;
+function vkvtc_activation() {
+    global $wpdb;
 
     $students = $wpdb->prefix . 'students';
     $wallet_transactions = $wpdb->prefix . 'wallet_transactions';
@@ -117,51 +106,88 @@ class VkVtcPlugin {
         FOREIGN KEY (course_ID) REFERENCES vk_posts(ID)
     ) $charset_collate";
 
- $sql__marksheet = "CREATE TABLE IF NOT EXISTS `$marksheet` (
-    marksheet_ID BIGINT(20) NOT NULL AUTO_INCREMENT,
-    position TINYINT NOT NULL,
-    certificate_ID BIGINT(20) UNSIGNED NOT NULL,
-    subject_ID BIGINT(20) UNSIGNED NOT NULL,
-    obtained_marks DECIMAL(6,2) UNSIGNED NOT NULL,
-    practical_marks DECIMAL(5,3),
-    PRIMARY KEY (marksheet_ID),
-    FOREIGN KEY (certificate_ID) REFERENCES vk_users(ID),
-    FOREIGN KEY (subject_ID) REFERENCES vk_posts(ID)
-) $charset_collate";
+    $sql__marksheet = "CREATE TABLE IF NOT EXISTS `$marksheet` (
+        marksheet_ID BIGINT(20) NOT NULL AUTO_INCREMENT,
+        position TINYINT NOT NULL,
+        certificate_ID BIGINT(20) UNSIGNED NOT NULL,
+        subject_ID BIGINT(20) UNSIGNED NOT NULL,
+        obtained_marks DECIMAL(6,2) UNSIGNED NOT NULL,
+        practical_marks DECIMAL(5,3),
+        PRIMARY KEY (marksheet_ID),
+        FOREIGN KEY (certificate_ID) REFERENCES vk_users(ID),
+        FOREIGN KEY (subject_ID) REFERENCES vk_posts(ID)
+    ) $charset_collate";
 
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta($sql_centers);//
-    dbDelta($sql_students);//
-    dbDelta($sql_transactions);//
-    dbDelta($sql_student_courses);//
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql_centers);
+    dbDelta($sql_students);
+    dbDelta($sql_transactions);
+    dbDelta($sql_student_courses);
     dbDelta($sql_certificates);
     dbDelta($sql__marksheet);
-    }
-
-    public function deactivation() {
-        global $wpdb;
-
-        $students = $wpdb->prefix . 'students';
-        $wallet_transactions = $wpdb->prefix . 'wallet_transactions';
-        $student_courses = $wpdb->prefix . 'student_courses';
-        $centers = $wpdb->prefix  . 'centers';
-        $certificates = $wpdb->prefix . 'certificates';
-        $marksheet = $wpdb->prefix . 'marks';
-
-        // // Drop the tables if they exist
-        // $wpdb->query("DROP TABLE IF EXISTS $centers");
-        // $wpdb->query("DROP TABLE IF EXISTS $students");
-        // $wpdb->query("DROP TABLE IF EXISTS $wallet_transactions");
-        // $wpdb->query("DROP TABLE IF EXISTS $student_courses");
-        // $wpdb->query("DROP TABLE IF EXISTS $certificates");
-        // $wpdb->query("DROP TABLE IF EXISTS $marksheet");
-    }
-
-    public function siteNameShortcode() {
-        return get_bloginfo("name");
-    }
 }
 
-// Instantiate the class
-$vkVtcPlugin = new VkVtcPlugin();
+function vkvtc_deactivation() {
+    global $wpdb;
+
+    $students = $wpdb->prefix . 'students';
+    $wallet_transactions = $wpdb->prefix . 'wallet_transactions';
+    $student_courses = $wpdb->prefix . 'student_courses';
+    $centers = $wpdb->prefix  . 'centers';
+    $certificates = $wpdb->prefix . 'certificates';
+    $marksheet = $wpdb->prefix . 'marks';
+
+    // Drop the tables if they exist
+    $wpdb->query("DROP TABLE IF EXISTS $centers");
+    $wpdb->query("DROP TABLE IF EXISTS $students");
+    $wpdb->query("DROP TABLE IF EXISTS $wallet_transactions");
+    $wpdb->query("DROP TABLE IF EXISTS $student_courses");
+    $wpdb->query("DROP TABLE IF EXISTS $certificates");
+    $wpdb->query("DROP TABLE IF EXISTS $marksheet");
+}
+
+function vkvtc_site_name_shortcode($attributes) {
+    // Set default values
+    $defaults = array(
+        'name' => 'Kaushik',
+        'msg'=> "Message"
+    );
+    ob_start();
+?>
+<div><h1>AnkitKaushik</h1></div>
+
+<?php
+    $html = ob_get_clean();
+    // Merge user attributes with default values
+    $attributes = shortcode_atts($defaults, $attributes);
+
+    // Retrieve the site name
+    $site_name = get_bloginfo("name");
+
+    // If 'name' attribute is present, concatenate with the site name
+    if (!empty($attributes['name'])) {
+        $site_name .= ' ' . $attributes['name'] . ' ' . $attributes['msg'];
+    }
+
+    return $html;
+}
+
+// Enqueue Scripts:
+function vkvtc_js_file(){
+    $path_js = plugins_url('/js/main.js', __FILE__);
+    $path_css = plugins_url('/css/style.css', __FILE__);
+$dep_js = array('jquery');
+$var = filemtime(plugin_dir_url(__FILE__. 'js/main.js'));
+wp_enqueue_style('vkvtc_main_css', $path_css, '', 1.0);
+wp_enqueue_script('vkvtc_main_js', $path_js, $dep_js, $var ,true);
+wp_add_inline_script('vkvtc_main_js', 'var_is_user_login = ' . is_user_logged_in() . ';' );
+}
+
+add_action('wp_enqueue_scripts', 'vkvtc_js_file');
+// Add shortcode
+add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
+
+
+// Register activation and deactivation hooks
+register_activation_hook(__FILE__, 'vkvtc_activation');
+register_deactivation_hook(__FILE__, 'vkvtc_deactivation');
