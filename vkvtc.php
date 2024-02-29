@@ -174,8 +174,8 @@ function vkvtc_site_name_shortcode($attributes) {
 
 // Enqueue Scripts:
 function vkvtc_js_file(){
-    $path_js = plugins_url('/js/main.js', __FILE__);
-    $path_css = plugins_url('/css/style.css', __FILE__);
+$path_js = plugins_url('/js/main.js', __FILE__);
+$path_css = plugins_url('/css/style.css', __FILE__);
 $dep_js = array('jquery');
 $var = filemtime(plugin_dir_url(__FILE__. 'js/main.js'));
 wp_enqueue_style('vkvtc_main_css', $path_css, '', 1.0);
@@ -183,10 +183,72 @@ wp_enqueue_script('vkvtc_main_js', $path_js, $dep_js, $var ,true);
 wp_add_inline_script('vkvtc_main_js', 'var_is_user_login = ' . is_user_logged_in() . ';' );
 }
 
+// 
+function vkvtc_show_table_data(){
+    global $wpdb;
+    $wp_users = $wpdb->prefix . 'users';
+    $query = "SELECT * FROM $wp_users";
+    $results =  $wpdb->get_results($query);
+    
+    ob_start();
+    ?>
+    <table class="table-border">
+        <thead>
+            <tr>
+                <th>2</th>
+                <th>3</th>
+                <th>4</th>
+                <th>5</th>
+                <th>6</th>
+            </tr>
+            <tbody>
+                <tr>
+                 <?php 
+                 foreach($results as $row):?>
+               <td><?php echo  $row->user_login; ?></td>
+               <td><?php echo  $row->user_email; ?></td>
+<td><?php echo $row->user_pass ?></td>
+                   <?php endforeach; ?> 
+                </tr>
+            </tbody>
+        </thead>
+    </table>
+    <?php
+    $html = ob_get_clean();
+    return $html;
+}
+
+function vkvtc_my_posts() {
+   $args = array(
+        'post_type' => 'post',
+        'category_name'=> 'departments',
+       
+    );
+ 
+    $query = new WP_Query($args);
+    ob_start();
+    if ($query->have_posts()) :
+    ?>
+        <ul>
+            <?php
+            while ($query->have_posts()) {
+                $query->the_post();
+          echo '<li>' . esc_html(get_the_title()) . ' ----' . wp_kses(get_the_content(), 'post') . '</li>';
+            }
+            ?>
+        </ul>
+    <?php
+    endif;
+    wp_reset_postdata();
+    $html = ob_get_clean();
+    return $html;
+}
+
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 // Add shortcode
+add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
-
+add_shortcode('vkvtc_my_posts', 'vkvtc_my_posts' );
 
 // Register activation and deactivation hooks
 register_activation_hook(__FILE__, 'vkvtc_activation');
