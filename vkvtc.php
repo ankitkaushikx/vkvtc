@@ -216,7 +216,8 @@ function vkvtc_show_table_data(){
     <?php
     $html = ob_get_clean();
     return $html;
-}function vkvtc_my_posts() {
+}
+function vkvtc_my_posts() {
     $args = array(
         'post_type' => 'post',
         'meta_query' => array(
@@ -272,8 +273,22 @@ function post_views(){
     return 'Total Views->'. get_post_meta($post->ID, 'views', true);
 }
 
+function vkvtc_page_function(){
+  include 'admin/main-page.php';
+}
+function vkvtc_page_centers_functions(){
+    echo "This is Submenu Page 'Centers' of VKVTC";
+}
+function vkvtc_admin_menu(){
+    add_menu_page('Vkvtc', 'VKVTC', 'manage_options','vkvtc_page',
+    'vkvtc_page_function', '', 4);
+    add_submenu_page('vkvtc_page', "VKVTC PAGE", "VKVTC PAGE TITLE", 'manage_options','vkvtc_page', 'vkvtc_page_function', 1  );
+
+    add_submenu_page('vkvtc_page', "Centers", "Centerss", 'manage_options','vkvtc_page_centers', 'vkvtc_page_centers_functions', 2  );
+}
 add_action('wp_head', 'count_the_visits');
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
+add_action('admin_menu', 'vkvtc_admin_menu');
 // Add shortcode
 add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
