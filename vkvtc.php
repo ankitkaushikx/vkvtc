@@ -221,8 +221,10 @@ function vkvtc_show_table_data(){
 function vkvtc_my_posts() {
    $args = array(
         'post_type' => 'post',
-        'category_name'=> 'departments',
-       
+        'posts_per_page' => 5,
+        'offset'=> 2,
+        'orderby' => 'ID',
+        'order'=> 'ASC',
     );
  
     $query = new WP_Query($args);
