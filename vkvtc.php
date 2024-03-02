@@ -335,10 +335,48 @@ function vkvtc_admin_menu(){
 function show_user_table(){
  return include 'admin/main-page.php';
 }
+
+function my_cpt(){
+    $label = array(
+        'name' => 'Cars', //admin panel pr dikhe ga 
+        'singular_name' => "Car",
+        
+    );
+    $options = array(
+            'labels' => $label,
+             'public' => true,
+             'has_archive' => true,
+             'rewrite' => array(
+                'slug' => 'cars',
+             ),
+              'show_in_rest' => true,
+              'supports' => array('title' , 'editor', 'excerpt', 'thumbnail', 'author'),
+     'taxonomies' => array('category', 'car_type'), // Add categories
+             );
+    register_post_type('cars', $options);
+}
+
+function register_car_types(){
+  $labels = array(
+    'name' => 'Car Type',
+    'singular_name' => 'Car Type',
+  );
+  $options = array(
+    'labels' => $labels,
+    'hierarchical' => true,
+    'show_in_rest'=> true,
+    'publicly_queryable' => true,
+    'rewrite' => array('slug' => 'car_type'),
+  );
+    register_taxonomy('car_type', array('cars'), $options);
+}
+add_action('init','register_car_types');
+add_action('init', 'my_cpt');
 add_action('wp_head', 'count_the_visits');
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 add_action('admin_menu', 'vkvtc_admin_menu');
 // Add shortcode
+add_shortcode('my-register-form','my-register-form')
 add_shortcode('show_user_table','show_user_table');
 add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
