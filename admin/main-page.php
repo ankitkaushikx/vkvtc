@@ -17,16 +17,26 @@ $search_query = new WP_User_Query($args);
 ?>
 
 <div class="wrap">
-    <h1 class="wp-heading-inline">User Table</h1>
-    <table class="wp-list-table widefat fixed striped users">
+    <h1 class="wp-heading-inline">Student List</h1>
+      <div class="myform">
+        <form action="<?php echo esc_url(admin_url('admin.php')); ?>" method="get" id="search-user-form">
+            <input type="hidden" name="page" value="vkvtc_page">
+            <input type="text" name="my_search_term" id="my-search-term" placeholder="Search For Student" value="<?php echo esc_attr($search_term); ?>">
+            <input type="submit" value="Search" name="search">
+        </form>
+    </div>
+    <table class="wp-list-table widefat fixed striped users" >
         <thead>
             <tr>
-                <th class="manage-column column-primary">Username</th>
-                <th>Email</th>
-                <th>Display Name</th>
+                <th >Id</th>
+                <th class="manage-column column-primary">Enrollment</th>
+                <th>Name</th>
+                <th>Father's Name</th>
+                <th>Course </th>
+                <th>Father's Name</th>
             </tr>
         </thead>
-        <tbody id="the-list">
+        <tbody id="my-table-result">
             <?php if ($search_query->get_results()) : ?>
                 <?php foreach ($search_query->get_results() as $user) : ?>
                     <tr>
@@ -42,11 +52,5 @@ $search_query = new WP_User_Query($args);
             <?php endif; ?>
         </tbody>
     </table>
-    <div class="myform">
-        <form action="<?php echo esc_url(admin_url('admin.php')); ?>" method="get">
-            <input type="hidden" name="page" value="vkvtc_page">
-            <input type="text" name="my_search_term" id="my-search-term" value="<?php echo esc_attr($search_term); ?>">
-            <input type="submit" value="Search" name="search">
-        </form>
-    </div>
+  
 </div>

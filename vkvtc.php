@@ -173,16 +173,61 @@ function vkvtc_site_name_shortcode($attributes) {
 }
 
 // Enqueue Scripts:
-function vkvtc_js_file(){
-$path_js = plugins_url('/js/main.js', __FILE__);
-$path_css = plugins_url('/css/style.css', __FILE__);
-$dep_js = array('jquery');
-// $var = filemtime(plugin_dir_url(__FILE__. 'js/main.js'));
-wp_enqueue_style('vkvtc_main_css', $path_css, '', 1.0);
-wp_enqueue_script('vkvtc_main_js', $path_js, $dep_js,1.0 ,true);
-wp_add_inline_script('vkvtc_main_js', 'var_is_user_login = ' . is_user_logged_in() . ';' );
+// Enqueue scripts and styles on the admin side
+function vkvtc_js_file() {
+    $path_js = plugins_url('/js/main.js', __FILE__);
+    $path_css = plugins_url('/css/style.css', __FILE__);
+    
+    // Enqueue styles
+    wp_enqueue_style('vkvtc_main_css', $path_css, '', '1.0');
+
+    // Enqueue main.js script with jQuery dependency
+    wp_enqueue_script('vkvtc_main_js', $path_js, array('jquery'), '1.1', true);
+
+    // Add inline script with ajaxUrl
+    wp_add_inline_script('vkvtc_main_js', 'var ajaxUrl = "' . admin_url('admin-ajax.php') . '";', 'after');
+
 }
 
+// Hook the function to the admin_enqueue_scripts action
+add_action('admin_enqueue_scripts', 'vkvtc_js_file');
+
+add_action('admin_enqueue_scripts', 'vkvtc_js_file');
+
+add_action('wp_ajax_my_search_function' , 'my_search_function');
+add_action('wp_ajax_nopriv_my_search_function', 'my_search_function');
+
+function my_search_function(){
+   $search_term = $_POST['search_term'];
+    if(!empty($search_term)){
+        
+global $wpdb;
+$wp_users = $wpdb->prefix . 'users';
+$args = array(
+    'search' => '*' . esc_sql($search_term) . '*',
+    'search_columns' => array(
+        'user_login',
+        'user_email',
+        'display_name',
+    ),
+);
+$search_query = new WP_User_Query($args);
+   $students = $search_query->get_results();
+   ob_start();
+             foreach($students as $student): ?>
+             <tr>
+                <td><?php echo $student->ID; ?></td>
+                <td><?php echo $student->display_name; ?></td>
+                <td><?php echo $student->user_email; ?></td>
+                <td><?php echo $student->user_login; ?></td>
+             </tr>
+
+                <?php
+             endforeach;
+             echo ob_get_clean();
+             wp_die();
+    }
+}
 // 
 function vkvtc_show_table_data(){
     global $wpdb;
@@ -286,10 +331,15 @@ function vkvtc_admin_menu(){
 
     add_submenu_page('vkvtc_page', "Centers", "Centerss", 'manage_options','vkvtc_page_centers', 'vkvtc_page_centers_functions', 2  );
 }
+
+function show_user_table(){
+ return include 'admin/main-page.php';
+}
 add_action('wp_head', 'count_the_visits');
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 add_action('admin_menu', 'vkvtc_admin_menu');
 // Add shortcode
+add_shortcode('show_user_table','show_user_table');
 add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
 add_shortcode('vkvtc_my_posts', 'vkvtc_my_posts' );
