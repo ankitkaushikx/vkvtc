@@ -370,13 +370,57 @@ function register_car_types(){
   );
     register_taxonomy('car_type', array('cars'), $options);
 }
+
+function my_register_form(){
+    ob_start();
+    include 'public/register.php';
+  $html = ob_get_clean();
+  return $html;
+}
+function my_login() {
+    if (isset($_POST['login'])) {
+        $username = sanitize_text_field($_POST['username']);
+        $password = sanitize_text_field($_POST['pass']);
+
+        // Check if username and password are provided
+        if (empty($username) || empty($password)) {
+            echo "Username and password are required.";
+            return;
+        }
+
+        $credentials = array(
+            'user_login' => $username,
+            'user_password' => $password,
+            'remember' => true, // You can set 'remember' to false if you don't want to remember the login
+        );
+
+        $user = wp_signon($credentials);
+
+        if (!is_wp_error($user)) {
+            if (in_array('administrator', $user->roles)) {
+                wp_redirect(admin_url());
+                exit;
+            } else {
+                // Redirect to a different page for non-admin users if needed
+                wp_redirect(home_url()); // Change 'home_url()' to the desired URL
+                exit;
+            }
+        } else {
+            echo $user->get_error_message();
+        }
+    }
+}
+
+
+
 add_action('init','register_car_types');
 add_action('init', 'my_cpt');
 add_action('wp_head', 'count_the_visits');
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 add_action('admin_menu', 'vkvtc_admin_menu');
+add_action('template_redirect', 'my_login'); //for loading before the header
 // Add shortcode
-add_shortcode('my-register-form','my-register-form')
+add_shortcode('my-register-form','my_register_form');
 add_shortcode('show_user_table','show_user_table');
 add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
