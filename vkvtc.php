@@ -377,6 +377,22 @@ function my_register_form(){
   $html = ob_get_clean();
   return $html;
 }
+
+
+function vkvtc_login_form(){
+    ob_start();
+    include 'public/login.php';
+    $html = ob_get_clean();
+    return $html;
+}
+
+function my_profile(){
+    ob_start();
+    include 'public/profile.php';
+    $html = ob_get_clean();
+    return $html;
+
+}
 function my_login() {
     if (isset($_POST['login'])) {
         $username = sanitize_text_field($_POST['username']);
@@ -402,7 +418,7 @@ function my_login() {
                 exit;
             } else {
                 // Redirect to a different page for non-admin users if needed
-                wp_redirect(home_url()); // Change 'home_url()' to the desired URL
+                wp_redirect(site_url('profile')); // Change 'home_url()' to the desired URL
                 exit;
             }
         } else {
@@ -411,7 +427,16 @@ function my_login() {
     }
 }
 
-
+function my_check_redirect(){
+    $is_user_logged_in = is_user_logged_in();
+    if($is_user_logged_in && (is_page('login') || is_page('register-user'))){
+        wp_redirect(site_url('profile'));
+        exit;
+    } elseif(!$is_user_logged_in && is_page('profile')){
+                     wp_redirect(site_url('login'));
+                     exit;
+    }
+}
 
 add_action('init','register_car_types');
 add_action('init', 'my_cpt');
@@ -419,14 +444,16 @@ add_action('wp_head', 'count_the_visits');
 add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 add_action('admin_menu', 'vkvtc_admin_menu');
 add_action('template_redirect', 'my_login'); //for loading before the header
+add_action('template_redirect', 'my_check_redirect');
 // Add shortcode
 add_shortcode('my-register-form','my_register_form');
 add_shortcode('show_user_table','show_user_table');
 add_shortcode('show_table', 'vkvtc_show_table_data');
 add_shortcode('vkvtc_siteName', 'vkvtc_site_name_shortcode');
 add_shortcode('vkvtc_my_posts', 'vkvtc_my_posts' );
-
+add_shortcode('my-login-form','vkvtc_login_form');
 add_shortcode('post_views', 'post_views');
+add_shortcode('my-profile', 'my_profile');
 // Register activation and deactivation hooks
 register_activation_hook(__FILE__, 'vkvtc_activation');
 register_deactivation_hook(__FILE__, 'vkvtc_deactivation');
