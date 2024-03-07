@@ -30,10 +30,10 @@ function vkvtc_activation() {
         registration_number BIGINT(20) UNSIGNED AUTO_INCREMENT,
         center_ID BIGINT(20) UNSIGNED NOT NULL,
         center_code VARCHAR(15) NOT NULL UNIQUE,
-        center_name VARCHAR(255) NOT NULL,
+        -- center_name VARCHAR(255) NOT NULL,
         address TEXT,
         phone VARCHAR(15) NOT NULL,
-        email VARCHAR(100),
+        -- email VARCHAR(100),
         status ENUM('ACTIVE','INACTIVE','APPROVED','BLOCKED','HOLD', 'CERTIFIED') NOT NULL,
         center_director VARCHAR(100),
         type VARCHAR(20),
@@ -48,15 +48,15 @@ function vkvtc_activation() {
 
     $sql_students = "CREATE TABLE IF NOT EXISTS $students (
         enrollment_number BIGINT(20) NOT NULL AUTO_INCREMENT, 
-        student_Id BIGINT(20) UNSIGNED NOT NULL UNIQUE, 
-        center_Id BIGINT(20) UNSIGNED NOT NULL,
-        student_name VARCHAR(120) NOT NULL, 
+        student_ID BIGINT(20) UNSIGNED NOT NULL UNIQUE, 
+        center_ID BIGINT(20) UNSIGNED NOT NULL,
+        -- student_name VARCHAR(120) NOT NULL, 
         father_name VARCHAR(120) NOT NULL, 
         mother_name VARCHAR(100) NOT NULL,
         phone VARCHAR(15) NOT NULL, 
         aadhar_number VARCHAR(12) NOT NULL UNIQUE,
         date_of_birth DATE NOT NULL,
-        gender ENUM('male', 'female'),
+        gender ENUM('Male', 'Female',),
         address VARCHAR(255) NOT NULL, 
         status ENUM('ACTIVE', 'INACTIVE', 'RESULTED', 'CERTIFIED', 'DROPPED', 'BLOCKED','HOLD'),
         picture VARCHAR(255),
@@ -65,7 +65,7 @@ function vkvtc_activation() {
         date_enrolled DATE NOT NULL,
         student_code VARCHAR(25),
         PRIMARY KEY(enrollment_number),
-        FOREIGN KEY (student_Id) REFERENCES vk_users(ID),
+        FOREIGN KEY (student_ID) REFERENCES vk_users(ID),
         FOREIGN KEY(center_Id) REFERENCES vk_users(ID)
     ) $charset_collate";
 
@@ -73,7 +73,7 @@ function vkvtc_activation() {
         certificate_ID BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
         student_ID BIGINT(20) UNSIGNED NOT NULL,
         center_ID BIGINT(20) UNSIGNED NOT NULL,
-        total_marks DECIMAL(7,2) UNSIGNED NOT NULL,
+        obtained_marks DECIMAL(7,2) UNSIGNED NOT NULL,
         maximum_marks SMALLINT UNSIGNED NOT NULL, 
         certificate_code VARCHAR(25) NOT NULL , 
         message VARCHAR(25),
@@ -96,8 +96,8 @@ function vkvtc_activation() {
 
     $sql_student_courses = "CREATE TABLE IF NOT EXISTS $student_courses (
         ID INT AUTO_INCREMENT,
-        student_ID BIGINT UNSIGNED NOT NULL,
-        center_ID BIGINT UNSIGNED NOT NULL,
+        student_ID BIGINT(20) UNSIGNED NOT NULL,
+        center_ID BIGINT(20) UNSIGNED NOT NULL,
         course_ID BIGINT(20) UNSIGNED NOT NULL,
         enrollment_date DATE NOT NULL,
         PRIMARY KEY (ID),
@@ -438,6 +438,11 @@ function my_check_redirect(){
     }
 }
 
+
+function redirect_after_logout(){
+    wp_redirect(site_url('login'));
+    exit;
+}
 add_action('init','register_car_types');
 add_action('init', 'my_cpt');
 add_action('wp_head', 'count_the_visits');
@@ -445,6 +450,7 @@ add_action('wp_enqueue_scripts', 'vkvtc_js_file');
 add_action('admin_menu', 'vkvtc_admin_menu');
 add_action('template_redirect', 'my_login'); //for loading before the header
 add_action('template_redirect', 'my_check_redirect');
+add_action('wp_logout', 'redirect_after_logout');
 // Add shortcode
 add_shortcode('my-register-form','my_register_form');
 add_shortcode('show_user_table','show_user_table');
